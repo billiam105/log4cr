@@ -1,0 +1,9 @@
+name: log4cr
+version: 0.1.0
+
+authors:
+  - William VanDyke <william.vandyke@va.wagner.com>
+
+crystal: 0.24.2
+
+license: MIT
