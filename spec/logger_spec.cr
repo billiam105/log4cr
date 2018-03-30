@@ -35,4 +35,76 @@ describe Log4cr::Logger do
   describe ".root_logger" do
     Log4cr::Logger.root_logger
   end
+
+  describe ".logger" do
+    it "gets different loggers for different categories" do
+      loggerA = Log4cr::Logger.get "a"
+      loggerB = Log4cr::Logger.get "b"
+
+      loggerA.should_not eq loggerB
+    end
+
+    it "gets the same logger for the same category" do
+      logger1 = Log4cr::Logger.get "a"
+      logger2 = Log4cr::Logger.get "a"
+
+      logger1.should eq logger2
+    end
+  end
+
+  describe "#info" do
+    it "writes to an appender" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      logger = Log4cr::Logger.get "a"
+      logger.add_appender appender
+      logger.info "a message"
+
+      io.empty?.should be_false
+    end
+
+    it "can write to the same appender multiple times" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      logger = Log4cr::Logger.get "a"
+      logger.add_appender appender
+      logger.add_appender appender
+      logger.info "a message"
+
+      str = io.to_s
+
+      str.index("a message").should_not eq str.rindex("a message")
+    end
+
+    it "does NOT inherit the appenders of its children" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      logger = Log4cr::Logger.get "a.b"
+      logger.add_appender appender
+      Log4cr::Logger.get("a").info "a message"
+
+      io.empty?.should be_true
+    end
+
+    it "logs to its parent(s)" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      logger = Log4cr::Logger.get "a"
+      logger.add_appender appender
+      Log4cr::Logger.get("a.b").info "a message"
+
+      io.empty?.should be_false
+    end
+
+    it "does not log if the threshold is higher than info" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      logger = Log4cr::Logger.get "a"
+      logger.add_appender appender
+      logger.level = ::Logger::WARN
+      logger.info "a message"
+
+      io.empty?.should be_true
+    end
+  end
 end
