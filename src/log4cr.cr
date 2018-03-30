@@ -22,12 +22,12 @@ module Log4cr
       repo.get category
     end
 
-    def add_appender(appender)
+    def add_appender(appender : Appender)
       appenders << appender
     end
 
     {% for threshold in %i(debug info warn error fatal) %}
-      def {{threshold.id}}(message)
+      def {{threshold.id}}(message : String)
         if level < ::Logger::{{threshold.id.upcase}}
           appenders.each do |appender|
             appender.{{threshold.id}} message
@@ -44,7 +44,7 @@ module Log4cr
     end
 
     {% for threshold in %i(debug info warn error fatal) %}
-      def {{threshold.id}}(message)
+      def {{threshold.id}}(message : String)
         if level < ::Logger::{{threshold.id.upcase}}
           appenders.each do |appender|
             appender.{{threshold.id}} message
@@ -69,7 +69,7 @@ module Log4cr
       repo[category]
     end
 
-    def parent_category(category)
+    def parent_category(category : String) : String
       unless category.includes? "."
         ""
       else
