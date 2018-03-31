@@ -32,14 +32,15 @@ logger.info "a message" # => logs "a message" to STDOUT (with a preamble)
 ```
 
 By using the logging hierarchy, appenders can be added to a parent category for use
-by all of its children:
+by all of its children.
+The category of the logger called is used as the `progname` for all the appenders.
 
 ```crystal
 important_logger = Log4cr::Logger.get "my.important_logger"
 unimportant_logger = Log4cr::Logger.get "my.unimportant_logger"
 unimportant_logger.level = ::Logger::FATAL
 Log4cr::Logger.get("my").add_appender Log4cr::Appender.new STDOUT
-important_logger.info "important message" # => logs to STDOUT
+important_logger.info "important message" # => logs to STDOUT: ... my.important_logger ... important message
 unimportant_logger.info "unimportant message" # => no logging
 ```
 
@@ -53,6 +54,8 @@ Log4cr::Logger.root_logger.add_appender Log4cr::Appender.new STDOUT
 some_logger.info "important message" # => logs to STDOUT
 another_logger.info "unimportant message" # => logs to STDOUT
 ```
+
+As with the standard library's Logger, the default level is INFO.
 
 ## Development
 
