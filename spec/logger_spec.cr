@@ -106,5 +106,15 @@ describe Log4cr::Logger do
 
       io.empty?.should be_true
     end
+
+    it "pervades the category all the way down" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      Log4cr::Logger.root_logger.add_appender appender
+
+      Log4cr::Logger.get("category").info "some message"
+
+      io.to_s.includes?("category").should be_true
+    end
   end
 end

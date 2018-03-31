@@ -8,9 +8,10 @@ module Log4cr
     private class_getter repo = LoggerRepository.new
     private getter appenders = Array(Appender).new
     private getter parent : Logger
+    private getter category : String
     property level : ::Logger::Severity
 
-    def initialize(@parent)
+    def initialize(@parent, @category)
       @level = ::Logger::INFO
     end
 
@@ -27,27 +28,28 @@ module Log4cr
     end
 
     {% for threshold in %i(debug info warn error fatal) %}
-      def {{threshold.id}}(message : String)
+      def {{threshold.id}}(message : String, child_category = nil)
+        child_category = category if child_category.nil?
         if level < ::Logger::{{threshold.id.upcase}}
           appenders.each do |appender|
-            appender.{{threshold.id}} message
+            appender.{{threshold.id}} message, child_category
           end
         end
-        parent.{{threshold.id}} message
+        parent.{{threshold.id}} message, child_category
       end
     {% end %}
   end
 
   class RootLogger < Logger
     def initialize
-      super self
+      super self, "root"
     end
 
     {% for threshold in %i(debug info warn error fatal) %}
-      def {{threshold.id}}(message : String)
+      def {{threshold.id}}(message : String, child_category = nil)
         if level < ::Logger::{{threshold.id.upcase}}
           appenders.each do |appender|
-            appender.{{threshold.id}} message
+            appender.{{threshold.id}} message, child_category
           end
         end
       end
@@ -64,7 +66,7 @@ module Log4cr
     def get(category : String) : Logger
       unless repo.has_key? category
         parent = parent_category category
-        repo[category] = Logger.new get parent
+        repo[category] = Logger.new get(parent), category
       end
       repo[category]
     end
