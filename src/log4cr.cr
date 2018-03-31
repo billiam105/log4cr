@@ -28,14 +28,21 @@ module Log4cr
     end
 
     {% for threshold in %i(debug info warn error fatal) %}
-      def {{threshold.id}}(message : String, child_category = nil)
-        child_category = category if child_category.nil?
-        if level < ::Logger::{{threshold.id.upcase}}
+      def {{threshold.id}}(message : String)
+        {{threshold.id}} message, category
+      end
+
+      protected def {{threshold.id}}(message : String, child_category)
+        if {{threshold.id}}?
           appenders.each do |appender|
             appender.{{threshold.id}} message, child_category
           end
         end
-        parent.{{threshold.id}} message, child_category
+        parent.{{threshold.id}} message, child_category unless parent == self
+      end
+
+      def {{threshold.id}}?
+        level <= ::Logger::{{threshold.id.upcase}}
       end
     {% end %}
   end
@@ -44,16 +51,6 @@ module Log4cr
     def initialize
       super self, "root"
     end
-
-    {% for threshold in %i(debug info warn error fatal) %}
-      def {{threshold.id}}(message : String, child_category = nil)
-        if level < ::Logger::{{threshold.id.upcase}}
-          appenders.each do |appender|
-            appender.{{threshold.id}} message, child_category
-          end
-        end
-      end
-    {% end %}
   end
 
   class LoggerRepository
