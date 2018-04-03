@@ -7,18 +7,13 @@ describe Log4cr::Logger do
       buffer2 = IO::Memory.new
       buffer3 = IO::Memory.new
 
-      appender1 = Log4cr::Appender.new buffer1
-      appender1.level = ::Logger::INFO
-      appender2 = Log4cr::Appender.new buffer2
-      appender2.level = ::Logger::ERROR
-      appender3 = Log4cr::Appender.new buffer3
-      appender3.level = ::Logger::DEBUG
+      appender1 = Log4cr::Appender.new buffer1, ::Logger::INFO
+      appender2 = Log4cr::Appender.new buffer2, ::Logger::ERROR
+      appender3 = Log4cr::Appender.new buffer3, ::Logger::DEBUG
 
-      logger1 = Log4cr::Logger.get "a.b"
-      logger1.level = ::Logger::FATAL
+      logger1 = Log4cr::Logger.get "a.b", ::Logger::FATAL
       logger1.add_appender appender1
-      logger2 = Log4cr::Logger.get "a"
-      logger2.level = ::Logger::DEBUG
+      logger2 = Log4cr::Logger.get "a", ::Logger::DEBUG
       logger2.add_appender appender2
       root = Log4cr::Logger.root_logger
       root.level = ::Logger::DEBUG

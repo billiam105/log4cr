@@ -2,7 +2,11 @@ require "./log4cr/*"
 
 # TODO: Write documentation for `Log4cr`
 module Log4cr
-  alias Appender = ::Logger
+  class Appender < ::Logger
+    def initialize(io : IO?, @level = ::Logger::INFO)
+      super io
+    end
+  end
 
   class Logger
     private class_getter repo = LoggerRepository.new
@@ -19,8 +23,10 @@ module Log4cr
       repo.get ""
     end
 
-    def self.get(category : String) : Logger
-      repo.get category
+    def self.get(category : String, level = ::Logger::INFO) : Logger
+      logger = repo.get category
+      logger.level = level
+      logger
     end
 
     def add_appender(appender : Appender)
