@@ -43,7 +43,10 @@ describe Log4cr::Logger do
       logger1 = Log4cr::Logger.get "a"
       logger2 = Log4cr::Logger.get "a"
 
-      logger1.should eq logger2
+      logger1.level = ::Logger::WARN
+      logger2.level = ::Logger::DEBUG
+
+      logger1.level.should eq ::Logger::DEBUG
     end
   end
 
@@ -108,6 +111,16 @@ describe Log4cr::Logger do
       Log4cr::Logger.root_logger.add_appender appender
 
       Log4cr::Logger.get("category").info "some message"
+
+      io.to_s.includes?("category").should be_true
+    end
+
+    it "can take a block to log" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      Log4cr::Logger.root_logger.add_appender appender
+
+      Log4cr::Logger.get("category").info { "some message" }
 
       io.to_s.includes?("category").should be_true
     end

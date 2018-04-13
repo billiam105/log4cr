@@ -3,8 +3,9 @@ require "./log4cr/*"
 # TODO: Write documentation for `Log4cr`
 module Log4cr
   class Appender < ::Logger
-    def initialize(io : IO?, @level = ::Logger::INFO)
+    def initialize(io : IO?, level = ::Logger::INFO)
       super io
+      @level = level
     end
   end
 
@@ -36,6 +37,13 @@ module Log4cr
     {% for threshold in %i(debug info warn error fatal) %}
       def {{threshold.id}}(message : String)
         {{threshold.id}} message, category
+      end
+
+      def {{threshold.id}}(&block)
+        if {{threshold.id}}?
+          message = yield.to_s
+          {{threshold.id}} message, category
+        end
       end
 
       protected def {{threshold.id}}(message : String, child_category)
