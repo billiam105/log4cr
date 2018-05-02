@@ -48,6 +48,13 @@ describe Log4cr::Logger do
 
       logger1.level.should eq ::Logger::DEBUG
     end
+
+    it "does not reset the level when getting the same category" do
+      Log4cr::Logger.get "n", Logger::WARN
+      logger = Log4cr::Logger.get "n"
+
+      logger.level.should eq Logger::WARN
+    end
   end
 
   describe "#info" do
@@ -122,7 +129,20 @@ describe Log4cr::Logger do
 
       Log4cr::Logger.get("category").info { "some message" }
 
-      io.to_s.includes?("category").should be_true
+      io.to_s.includes?("some message").should be_true
+    end
+
+    it "logs to the parent when the threshold allows" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      Log4cr::Logger.root_logger.add_appender appender
+      Log4cr::Logger.root_logger.level = Logger::INFO
+      Log4cr::Logger.get("category").level = Logger::WARN
+
+      Log4cr::Logger.get("category").info { "some message" }
+
+      message = io.to_s
+      message.includes?("some message").should be_true
     end
   end
 end

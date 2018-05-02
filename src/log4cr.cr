@@ -16,8 +16,7 @@ module Log4cr
     private getter category : String
     property level : ::Logger::Severity
 
-    def initialize(@parent, @category)
-      @level = ::Logger::INFO
+    def initialize(@parent, @category, @level = ::Logger::INFO)
     end
 
     def self.root_logger
@@ -25,9 +24,7 @@ module Log4cr
     end
 
     def self.get(category : String, level = ::Logger::INFO) : Logger
-      logger = repo.get category
-      logger.level = level
-      logger
+      repo.get category, level
     end
 
     def add_appender(appender : Appender)
@@ -40,9 +37,17 @@ module Log4cr
       end
 
       def {{threshold.id}}(&block)
-        if {{threshold.id}}?
+        if any_{{threshold.id}}?
           message = yield.to_s
           {{threshold.id}} message, category
+        end
+      end
+
+      protected def any_{{threshold.id}}?
+        if parent == self
+          {{threshold.id}}?
+        else
+          {{threshold.id}}? || parent.any_{{threshold.id}}?
         end
       end
 
@@ -68,16 +73,16 @@ module Log4cr
   end
 
   class LoggerRepository
-    private getter repo = Hash(String, Logger).new
+    protected getter repo = Hash(String, Logger).new
 
     def initialize
       repo[""] = RootLogger.new
     end
 
-    def get(category : String) : Logger
+    def get(category : String, threshold = ::Logger::INFO) : Logger
       unless repo.has_key? category
         parent = parent_category category
-        repo[category] = Logger.new get(parent), category
+        repo[category] = Logger.new get(parent), category, threshold
       end
       repo[category]
     end
