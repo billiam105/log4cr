@@ -7,22 +7,22 @@ describe Log4cr::Logger do
       buffer2 = IO::Memory.new
       buffer3 = IO::Memory.new
 
-      appender1 = Log4cr::Appender.new buffer1, ::Logger::INFO
-      appender2 = Log4cr::Appender.new buffer2, ::Logger::ERROR
-      appender3 = Log4cr::Appender.new buffer3, ::Logger::DEBUG
+      appender1 = Log4cr::Appender.new buffer1
+      appender2 = Log4cr::Appender.new buffer2
+      appender3 = Log4cr::Appender.new buffer3
 
       logger1 = Log4cr::Logger.get "a.b", ::Logger::FATAL
       logger1.add_appender appender1
       logger2 = Log4cr::Logger.get "a", ::Logger::DEBUG
       logger2.add_appender appender2
       root = Log4cr::Logger.root_logger
-      root.level = ::Logger::DEBUG
+      root.level = ::Logger::INFO
       root.add_appender appender3
 
       logger1.warn "A message"
 
       buffer1.empty?.should be_true
-      buffer2.empty?.should be_true
+      buffer2.empty?.should be_false
       buffer3.empty?.should be_false
     end
   end
@@ -101,6 +101,20 @@ describe Log4cr::Logger do
       io.empty?.should be_false
     end
 
+    it "can log to both itself and its parent" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      logger = Log4cr::Logger.get "logger"
+      logger.add_appender appender
+      Log4cr::Logger.root_logger.add_appender appender
+
+      logger.info "message"
+      result = io.to_s
+
+      result.includes?("message").should be_true
+      result[(result.size()/2)..-1].includes?("message").should be_true
+    end
+
     it "does not log if the threshold is higher than info" do
       io = IO::Memory.new
       appender = Log4cr::Appender.new io
@@ -116,6 +130,7 @@ describe Log4cr::Logger do
       io = IO::Memory.new
       appender = Log4cr::Appender.new io
       Log4cr::Logger.root_logger.add_appender appender
+      Log4cr::Logger.root_logger.level = ::Logger::INFO
 
       Log4cr::Logger.get("category").info "some message"
 
@@ -143,6 +158,32 @@ describe Log4cr::Logger do
 
       message = io.to_s
       message.includes?("some message").should be_true
+    end
+
+    it "logs to the parent's appender when the threshold allows" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      Log4cr::Logger.root_logger.add_appender appender
+      Log4cr::Logger.root_logger.level = Logger::WARN
+      Log4cr::Logger.get("category").level = Logger::INFO
+
+      Log4cr::Logger.get("category").info { "some message" }
+
+      message = io.to_s
+      message.includes?("some message").should be_true
+    end
+
+    it "doesn't double log" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      Log4cr::Logger.root_logger.add_appender appender
+      Log4cr::Logger.root_logger.level = Logger::INFO
+      Log4cr::Logger.get("category").level = Logger::INFO
+
+      Log4cr::Logger.get("category").info { "some message" }
+
+      message = io.to_s
+      /message.+message/m.match(message).should be_nil
     end
   end
 end

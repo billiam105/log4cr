@@ -1,17 +1,18 @@
+require "logger"
 require "./log4cr/*"
 
 # TODO: Write documentation for `Log4cr`
 module Log4cr
   class Appender < ::Logger
-    def initialize(io : IO?, level = ::Logger::INFO)
+    def initialize(io : IO?)
       super io
-      @level = level
+      @level = ::Logger::DEBUG
     end
   end
 
   class Logger
     private class_getter repo = LoggerRepository.new
-    private getter appenders = Array(Appender).new
+    protected getter appenders = Array(Appender).new
     private getter parent : Logger
     private getter category : String
     property level : ::Logger::Severity
@@ -29,6 +30,10 @@ module Log4cr
 
     def add_appender(appender : Appender)
       appenders << appender
+    end
+
+    def all_appenders
+      appenders + parent.appenders
     end
 
     {% for threshold in %i(debug info warn error fatal) %}
@@ -53,11 +58,12 @@ module Log4cr
 
       protected def {{threshold.id}}(message : String, child_category)
         if {{threshold.id}}?
-          appenders.each do |appender|
+          all_appenders.each do |appender|
             appender.{{threshold.id}} message, child_category
           end
+        else
+          parent.{{threshold.id}} message, child_category unless parent == self
         end
-        parent.{{threshold.id}} message, child_category unless parent == self
       end
 
       def {{threshold.id}}?
@@ -69,6 +75,10 @@ module Log4cr
   class RootLogger < Logger
     def initialize
       super self, "root"
+    end
+
+    def all_appenders
+      appenders
     end
   end
 
