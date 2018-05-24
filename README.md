@@ -11,7 +11,7 @@ Add this to your application's `shard.yml`:
 ```yaml
 dependencies:
   log4cr:
-    github: thedrow484/log4cr
+    github: billiam105/log4cr
 ```
 
 ## Usage
@@ -63,7 +63,7 @@ TODO: Write development instructions here
 
 ## Contributing
 
-1. Fork it ( https://github.com/thedrow484/log4cr/fork )
+1. Fork it ( https://github.com/billiam105/log4cr/fork )
 2. Create your feature branch (git checkout -b my-new-feature)
 3. Commit your changes (git commit -am 'Add some feature')
 4. Push to the branch (git push origin my-new-feature)
@@ -71,4 +71,4 @@ TODO: Write development instructions here
 
 ## Contributors
 
-- [thedrow484](https://github.com/thedrow484) William VanDyke - creator, maintainer
+- [billiam105](https://github.com/billiam105) William VanDyke - creator, maintainer
