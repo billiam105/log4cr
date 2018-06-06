@@ -57,7 +57,7 @@ module Log4cr
       end
 
       protected def {{threshold.id}}(message : String, child_category)
-        if {{threshold.id}}?
+        if !message.empty? && {{threshold.id}}?
           all_appenders.each do |appender|
             appender.{{threshold.id}} message, child_category
           end
