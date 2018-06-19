@@ -101,6 +101,16 @@ describe Log4cr::Logger do
       io.empty?.should be_false
     end
 
+    it "logs to its grandparent(s)" do
+      io = IO::Memory.new
+      appender = Log4cr::Appender.new io
+      logger = Log4cr::Logger.get "a"
+      logger.add_appender appender
+      Log4cr::Logger.get("a.b.c").info "a message"
+
+      io.empty?.should be_false
+    end
+
     it "can log to both itself and its parent" do
       io = IO::Memory.new
       appender = Log4cr::Appender.new io
