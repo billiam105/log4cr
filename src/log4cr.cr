@@ -33,7 +33,7 @@ module Log4cr
     end
 
     def all_appenders
-      appenders + parent.appenders
+      appenders + parent.all_appenders
     end
 
     {% for threshold in %i(debug info warn error fatal) %}
